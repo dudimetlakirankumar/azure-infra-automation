@@ -16,10 +16,10 @@ provider "azurerm" {
 }
 
 
-locals {
-  resource_group=var.rgname
-  location=var.location
-}
+#locals {
+#  resource_group=var.rgname
+#  location=var.location
+#}
 
 
 resource "tls_private_key" "linux_key" {
@@ -36,22 +36,22 @@ resource "local_file" "linuxkey" {
 }
 
 data "azurerm_resource_group" "app_grp"{
-  name=local.resource_group
-#  location=local.location
+  name=var.rgname
+#  location=var.location
 }
 
 resource "azurerm_virtual_network" "app_network" {
-  name                = "app-network"
-  location            = local.location
-  resource_group_name = data.azurerm_resource_group.app_grp.name
-  address_space       = ["10.0.0.0/16"]
+  name                = var.vnet
+  location            = var.location
+  resource_group_name = var.rgname
+  address_space       = var.vnet_cidr_prefix
 }
 
 resource "azurerm_subnet" "SubnetA" {
-  name                 = "SubnetA"
-  resource_group_name  = local.resource_group
-  virtual_network_name = azurerm_virtual_network.app_network.name
-  address_prefixes     = ["10.0.1.0/24"]
+  name                 = var.subnet
+  resource_group_name  = var.rgname
+  virtual_network_name = var.vnet
+  address_prefixes     = var.subnet1_cidr_prefix
   depends_on = [
     azurerm_virtual_network.app_network
   ]
@@ -60,8 +60,8 @@ resource "azurerm_subnet" "SubnetA" {
 
 resource "azurerm_network_interface" "app_interface" {
   name                = "app-interface"
-  location            = local.location
-  resource_group_name = local.resource_group
+  location            = var.location
+  resource_group_name = var.rgname
 
   ip_configuration {
     name                          = "internal"
@@ -77,16 +77,16 @@ resource "azurerm_network_interface" "app_interface" {
 }
 
 resource "azurerm_linux_virtual_machine" "linux_vm" {
-  name                = "linuxvm"
-  resource_group_name = local.resource_group
-  location            = local.location
+  name                = var.vmname
+  resource_group_name = var.rgname
+  location            = var.location
   size                = "Standard_D2s_v3"
-  admin_username      = "linuxusr"  
+  admin_username      = var.vmuser  
   network_interface_ids = [
     azurerm_network_interface.app_interface.id,
   ]
   admin_ssh_key {
-    username   = "linuxusr"
+    username   = var.vmuser
     public_key = tls_private_key.linux_key.public_key_openssh
   }
   os_disk {
@@ -108,9 +108,9 @@ resource "azurerm_linux_virtual_machine" "linux_vm" {
 }
 
 resource "azurerm_public_ip" "app_public_ip" {
-  name                = "app-public-ip"
-  resource_group_name = local.resource_group
-  location            = local.location
+  name                = var.pip
+  resource_group_name = var.rgname
+  location            = var.location
   allocation_method   = "Static"
   depends_on = [
     data.azurerm_resource_group.app_grp
