@@ -41,7 +41,7 @@ data "azurerm_resource_group" "app_grp"{
 }
 
 resource "azurerm_virtual_network" "app_network" {
-  name                = var.vnet
+  name                = var.vnetname
   location            = var.location
   resource_group_name = var.rgname
   address_space       = var.vnet_cidr_prefix
