@@ -6,7 +6,7 @@ variable "rgname"{
 variable "location"{
     type = string
     description = "used for selecting location"
-    default = "eastus"
+    default = "westus"
 }
 
 variable "prefix" {
