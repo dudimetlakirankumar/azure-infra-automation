@@ -1,0 +1,28 @@
+provider "azurerm" {
+  features {}
+}
+
+data "azurerm_resource_group" "example" {
+  name     = "learn-42a74bcb-8f41-4108-a18f-7f86b92eb51f"
+}
+
+resource "azurerm_dns_zone" "example" {
+  name                = "dudimetlakiran.com"
+  resource_group_name = data.azurerm_resource_group.example.name
+}
+
+resource "azurerm_dns_a_record" "example" {
+  name                = "www"
+  zone_name           = azurerm_dns_zone.example.name
+  resource_group_name = data.azurerm_resource_group.example.name
+  ttl                 = 300
+  records             = ["10.0.0.1"]
+}
+
+resource "azurerm_dns_cname_record" "example" {
+  name                = "blog"
+  zone_name           = azurerm_dns_zone.example.name
+  resource_group_name = data.azurerm_resource_group.example.name
+  ttl                 = 300
+  record              = "dev"
+}
