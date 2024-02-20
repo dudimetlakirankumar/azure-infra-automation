@@ -1,0 +1,105 @@
+data "azurerm_resource_group" "example" {
+  name     = "learn-dadc0ed3-bb68-430f-9f6e-e92e9f39e911"
+}
+
+resource "azurerm_virtual_network" "example" {
+  name                = "example-network"
+  address_space       = ["10.0.0.0/16"]
+  location            = data.azurerm_resource_group.example.location
+  resource_group_name = data.azurerm_resource_group.example.name
+}
+
+resource "azurerm_subnet" "example" {
+  name                 = "internal"
+  resource_group_name  = data.azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.example.name
+  address_prefixes     = ["10.0.2.0/24"]
+}
+
+resource "azurerm_network_security_group" "example" {
+  name                = "example-nsg"
+  location            = data.azurerm_resource_group.example.location
+  resource_group_name = data.azurerm_resource_group.example.name
+}
+
+resource "azurerm_public_ip" "example" {
+  name                = "pip"
+  resource_group_name = data.azurerm_resource_group.example.name
+  location            = data.azurerm_resource_group.example.location
+  allocation_method   = "Static"
+}
+
+resource "azurerm_network_interface" "example" {
+  name                = "example-nic"
+  location            = data.azurerm_resource_group.example.location
+  resource_group_name = data.azurerm_resource_group.example.name
+
+  ip_configuration {
+    name                          = "internalip"
+    subnet_id                     = azurerm_subnet.example.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = azurerm_public_ip.example.id
+  }
+  depends_on = [
+    azurerm_virtual_network.example,
+    azurerm_public_ip.example
+  ]
+}
+
+resource "azurerm_network_interface_security_group_association" "example" {
+  network_interface_id      = azurerm_network_interface.example.id
+  network_security_group_id = azurerm_network_security_group.example.id
+}
+
+resource "azurerm_linux_virtual_machine" "example" {
+  name                = "example-machine"
+  resource_group_name = data.azurerm_resource_group.example.name
+  location            = data.azurerm_resource_group.example.location
+  size                = "Standard_D2s_v3"
+  admin_username      = "azureuser"
+  network_interface_ids = [
+    azurerm_network_interface.example.id,
+  ]
+
+  admin_ssh_key {
+    username   = "azureuser"
+    public_key = file("~/.ssh/id_rsa.pub")
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+  depends_on = [
+    azurerm_network_interface.example
+  ]
+}
+// Here we are creating the Public DNS Zone
+resource "azurerm_dns_zone" "public_zone" {
+  name                = "dudimetlakiran.com"
+  resource_group_name = data.azurerm_resource_group.app_grp.name
+}
+
+output "server_names"{
+  value=azurerm_dns_zone.public_zone.name_servers
+}
+
+// Pointing the domain name to the load balancer
+resource "azurerm_dns_a_record" "load_balancer_record" {
+  name                = "www"
+  zone_name           = azurerm_dns_zone.public_zone.name
+  resource_group_name = data.azurerm_resource_group.app_grp.name
+  ttl                 = 1
+  records             = [azurerm_public_ip.example.ip_address]
+  depends_on = [
+  azurerm_public_ip.example
+  ]
+}
+  
