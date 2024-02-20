@@ -9,10 +9,31 @@ variable "location"{
     default = "westus"
 }
 
-variable "prefix" {
+variable "vnetname" {
   type = string
   description = "The prefix used for all resources in this example"
 }
+
+variable "vmname" {
+  type = string
+  description = "The prefix used for all resources in this example"
+}
+
+variable "vmname" {
+  type = string
+  description = "The prefix used for all resources in this example"
+}
+
+variable "username" {
+  type = string
+  description = "The prefix used for all resources in this example"
+}
+
+variable "pip" {
+  type = string
+  description = "The prefix used for all resources in this example"
+}
+
 
 variable "vnet_cidr_prefix" {
   type = string
