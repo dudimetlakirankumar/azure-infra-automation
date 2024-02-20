@@ -1,51 +1,35 @@
-variable "rgname"{
-    type = string
-    description = "used for naming resource group"
+variable "resource_group_name" {
+  type        = string
+  description = "Name of the resource group where the VM will be created"
 }
 
-variable "location"{
-    type = string
-    description = "used for selecting location"
-    default = "westus"
+variable "location" {
+  type        = string
+  description = "Azure region where resources will be deployed"
 }
 
-variable "vnetname" {
-  type = string
-  description = "The prefix used for all resources in this example"
+variable "vm_name" {
+  type        = string
+  description = "Name of the virtual machine"
 }
 
-variable "vmname" {
-  type = string
-  description = "The prefix used for all resources in this example"
+variable "vm_size" {
+  type        = string
+  description = "Size of the virtual machine"
+  default     = "Standard_DS1_v2"
 }
 
-variable "vmname" {
-  type = string
-  description = "The prefix used for all resources in this example"
+variable "admin_username" {
+  type        = string
+  description = "Username for accessing the virtual machine"
 }
 
-variable "username" {
-  type = string
-  description = "The prefix used for all resources in this example"
+variable "admin_password" {
+  type        = string
+  description = "Password for accessing the virtual machine"
 }
 
-variable "pip" {
-  type = string
-  description = "The prefix used for all resources in this example"
-}
-
-
-variable "vnet_cidr_prefix" {
-  type = string
-  description = "This variable defines address space for vnet"
-}
-
-variable "subnet1_cidr_prefix" {
-  type = string
-  description = "This variable defines address space for subnetnet"
-}
-
-variable "subnet" {
-  type = string
-  description = "This variable defines subnet name"
+variable "ssh_public_key" {
+  type        = string
+  description = "SSH public key for accessing the virtual machine (optional)"
 }
