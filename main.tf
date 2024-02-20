@@ -31,7 +31,7 @@ resource "tls_private_key" "linux_key" {
 # We can then use this key to connect to our Linux VM
 
 resource "local_file" "linuxkey" {
-  filename="linuxkey.pem"  
+  filename= var.username.pem  
   content=tls_private_key.linux_key.private_key_pem 
 }
 
