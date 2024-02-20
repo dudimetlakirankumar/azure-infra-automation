@@ -17,8 +17,8 @@ provider "azurerm" {
 
 
 locals {
-  resource_group="learn-512bab0e-3bda-49b8-a858-375b150952c1"
-  location="westus"
+  resource_group=var.rgname
+  location=var.location
 }
 
 
